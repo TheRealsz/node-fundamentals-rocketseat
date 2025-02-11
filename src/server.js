@@ -19,7 +19,9 @@ const server = http.createServer((req, res) => {
         return res.end('User created')
     }
 
-    res.end('Hello World!')
+    res
+    .writeHead(404)
+    .end('Not Found')
 })
 
 server.listen(port, () => {
