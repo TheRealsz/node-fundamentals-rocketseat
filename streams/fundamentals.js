@@ -4,7 +4,7 @@
 // process.stdin.pipe(process.stdout)
 
 
-import { Readable } from 'stream'
+import { Readable, Writable } from 'stream'
 
 // Stream de leitura
 // Proposito de enviar dados, fornecer informações
@@ -29,7 +29,20 @@ class OneToHundredStream extends Readable {
     }
 }
 
+class MultiplyByTwoStream extends Writable {
+    // Toda classe que herda de Writable precisa implementar o método _write
+    // chunk: pedaço de dados que estou recebendo
+    // encoding: encoding do chunk
+    // callback: função que chama quando terminar de processar o chunk
+    // Dentro de uma stream de escrita, nao retornamos nada e nem transformamos o dado, apenas processamos
+    _write(chunk, encoding, callback) {
+        const number = Number(chunk.toString())
+        console.log(number * 2)
+        callback()
+    }
+}
+
 // Stream de escrita
 // Proposito de receber dados
 // Enquanto estou recebendo dados, estou fazendo algo com eles
-new OneToHundredStream().pipe(process.stdout)
+new OneToHundredStream().pipe(new MultiplyByTwoStream())
