@@ -4,7 +4,7 @@
 // process.stdin.pipe(process.stdout)
 
 
-import { Readable, Writable } from 'stream'
+import { Readable, Writable, Transform } from 'stream'
 
 // Stream de leitura
 // Proposito de enviar dados, fornecer informações
@@ -29,6 +29,29 @@ class OneToHundredStream extends Readable {
     }
 }
 
+// Uma stream de transformação é uma stream que recebe dados, transforma e envia para a próxima stream, ou seja, é uma stream intermediária entre a stream de leitura e a stream de escrita
+class InverseNumberStream extends Transform {
+    // Toda classe que herda de Transform precisa implementar o método _transform
+    // chunk: pedaço de dados que estou recebendo
+    // encoding: encoding do chunk
+    // callback: função que chama quando terminar de processar o chunk
+    // Dentro de uma stream de transformação, retornamos o dado transformado
+    _transform(chunk, encoding, callback) {
+        let err = null
+
+        const number = Number(chunk.toString())
+
+        if (number < 0) {
+            err = new Error('Number must be positive')
+        }
+
+        const transformedChunk = Buffer.from(String(number * -1))
+
+        // Primeiro parametro de um callback é o erro (null se não houver erro) e o segundo é o dado, que precisa ser um buffer
+        callback(err, transformedChunk)
+    }
+}
+
 class MultiplyByTwoStream extends Writable {
     // Toda classe que herda de Writable precisa implementar o método _write
     // chunk: pedaço de dados que estou recebendo
@@ -45,4 +68,6 @@ class MultiplyByTwoStream extends Writable {
 // Stream de escrita
 // Proposito de receber dados
 // Enquanto estou recebendo dados, estou fazendo algo com eles
-new OneToHundredStream().pipe(new MultiplyByTwoStream())
+new OneToHundredStream()
+    .pipe(new InverseNumberStream())
+    .pipe(new MultiplyByTwoStream())
