@@ -21,10 +21,25 @@ class InverseNumberStream extends Transform {
 // req é uma stream de leitura (Readable), podemos ler dados do front-end através dela
 // res é uma stream de escrita (Writable), podemos escrever dados para o front-end através dela
 
-const server = http.createServer((req, res) => {
-    return req
-        .pipe(new InverseNumberStream())
-        .pipe(res)
+const server = http.createServer(async (req, res) => {
+    const buffers = []
+
+    // Adicionando os chunks de dados em um array de buffers para depois trabalhar com a informação completa
+    // Pegando cada chunk da requisição e adicionando no array de buffers
+    // Nada abaixo do await irá rodar até que a requisição seja completada
+    for await (const chunk of req) {
+        buffers.push(chunk)
+    }
+
+    // Após juntar todos os chunks no array de buffers, concatena todos os buffers em um único buffer e transformando em string
+    const fullStreamContent = Buffer.concat(buffers).toString()
+
+    console.log(fullStreamContent)
+    return res.end(fullStreamContent)
+
+    // return req
+    //     .pipe(new InverseNumberStream())
+    //     .pipe(res)
 })
 
 server.listen(3334)
